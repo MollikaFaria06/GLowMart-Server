@@ -11,6 +11,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+
 // MongoDB URI
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2xgatkm.mongodb.net/?appName=Cluster0`;
 
@@ -28,7 +29,6 @@ async function run() {
 
   console.log("MongoDB Ready");
 
-  // Root route (important for Vercel)
   app.get("/", (req, res) => {
     res.send("GlowMart backend is running 🚀");
   });
