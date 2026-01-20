@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB URI
-const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2xgatkm.mongodb.net/?appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2xgatkm.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -21,68 +21,73 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
-  try {
-    await client.connect(); // ensure connection
-    const db = client.db("glowMart");
-    const productsCollection = db.collection("products");
+  const db = client.db("glowMart");
+  const productsCollection = db.collection("products");
 
-    console.log("MongoDB Connected");
+  console.log("MongoDB Ready");
 
-    app.get("/", (req, res) => {
-  res.send("GlowMart backend is running!");
-});
+  // Root route (important for Vercel)
+  app.get("/", (req, res) => {
+    res.send("GlowMart backend is running 🚀");
+  });
 
-
-    // GET all products
-    app.get("/shop", async (req, res) => {
+  // GET all products
+  app.get("/shop", async (req, res) => {
+    try {
       const result = await productsCollection.find().toArray();
       res.send(result);
-    });
+    } catch (error) {
+      res.status(500).send({ error: "Server error" });
+    }
+  });
 
-    // GET latest 8 products
-    app.get("/latestProducts", async (req, res) => {
+  // GET latest 8 products
+  app.get("/latestProducts", async (req, res) => {
+    try {
       const result = await productsCollection
         .find()
         .sort({ _id: -1 })
         .limit(8)
         .toArray();
       res.send(result);
-    });
-
-    // GET single product by ID
-app.get("/shop/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    // MongoDB ObjectId validate
-    if (!ObjectId.isValid(id)) {
-      return res.status(400).send({ error: "Invalid product ID" });
+    } catch (error) {
+      res.status(500).send({ error: "Server error" });
     }
+  });
 
-    const product = await productsCollection.findOne({ _id: new ObjectId(id) });
+  // GET single product by ID
+  app.get("/shop/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
 
-    if (!product) {
-      return res.status(404).send({ error: "Product not found" });
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).send({ error: "Invalid product ID" });
+      }
+
+      const product = await productsCollection.findOne({
+        _id: new ObjectId(id),
+      });
+
+      if (!product) {
+        return res.status(404).send({ error: "Product not found" });
+      }
+
+      res.send(product);
+    } catch (error) {
+      res.status(500).send({ error: "Server error" });
     }
+  });
 
-    res.send(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Server error" });
-  }
-});
-
-
-    // POST new product
-    app.post("/shop", async (req, res) => {
+  // POST new product
+  app.post("/shop", async (req, res) => {
+    try {
       const newProduct = req.body;
       const result = await productsCollection.insertOne(newProduct);
       res.send({ success: true, result });
-    });
-
-  } finally {
-    // keep connection alive
-  }
+    } catch (error) {
+      res.status(500).send({ error: "Server error" });
+    }
+  });
 }
 
 run().catch(console.dir);
