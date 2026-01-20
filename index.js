@@ -28,6 +28,11 @@ async function run() {
 
     console.log("MongoDB Connected");
 
+    app.get("/", (req, res) => {
+  res.send("GlowMart backend is running!");
+});
+
+
     // GET all products
     app.get("/shop", async (req, res) => {
       const result = await productsCollection.find().toArray();
