@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // await client.connect(); // ensure connection
+    await client.connect(); // ensure connection
     const db = client.db("glowMart");
     const productsCollection = db.collection("products");
 
