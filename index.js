@@ -33,7 +33,6 @@ async function run() {
     res.send("GlowMart backend is running 🚀");
   });
 
-  // GET all products
   app.get("/shop", async (req, res) => {
     try {
       const result = await productsCollection.find().toArray();
@@ -43,7 +42,6 @@ async function run() {
     }
   });
 
-  // GET latest 8 products
   app.get("/latestProducts", async (req, res) => {
     try {
       const result = await productsCollection
@@ -57,7 +55,6 @@ async function run() {
     }
   });
 
-  // GET single product by ID
   app.get("/shop/:id", async (req, res) => {
     try {
       const id = req.params.id;
@@ -80,7 +77,6 @@ async function run() {
     }
   });
 
-  // POST new product
   app.post("/shop", async (req, res) => {
     try {
       const newProduct = req.body;
